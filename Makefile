@@ -1,5 +1,3 @@
-PROGRAMS = src/trace
-
 # Important optimization options
 CXXFLAGS = -O3 -ffast-math -fno-rtti
 
@@ -16,14 +14,15 @@ CFLAGS += -std=c++11
 # Annoying warnings on by default on Mac OS
 CXXFLAGS += -Wno-tautological-constant-out-of-range-compare -Wno-gnu-static-float-init
 
+all: trace layout.json
 
-all: $(PROGRAMS)
+trace:
+	$(CXX) $(CXXFLAGS) src/trace.cpp -o trace $(LDFLAGS)
 
-.cpp:
-	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
-	mv src/trace ./
+layout.json:
+	./generate-layout.py > layout.json
 
 .PHONY: clean all
 
 clean:
-	rm -f $(PROGRAMS)
+	rm -rf trace layout.json **.dSYM
