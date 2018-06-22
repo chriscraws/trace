@@ -20,7 +20,7 @@ public:
 
     virtual void beginFrame(const FrameInfo &f)
     {
-        const float speed = 0.5;
+        const float speed = 0.25;
         cycle = fmodf(cycle + f.timeDelta * speed, 1.0);
     }
 
