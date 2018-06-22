@@ -7,10 +7,7 @@ import sys
 parser = optparse.OptionParser(description='''
 Outputs the layout for the trace burning man project in json format.
 
-Units are expressed in meters from the center of the cube.
-
-The first 2048 points are the cube. This will consist of each
-64-length tube, sequentially.''')
+Units are expressed in meters with the origin at the center of the cube.''')
 
 num_pixels = 2048
 result = ['[']
