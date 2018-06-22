@@ -1,4 +1,4 @@
 *.o
 trace
-**/*.dYSM
+**.dSYM
 layout.json
