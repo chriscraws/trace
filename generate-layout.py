@@ -14,11 +14,11 @@ result = ['[']
 tube_gap_meters = 0.2667
 led_gap_meters = 0.035
 
-for xi in range(8):
-	for zi in range(8):
+for zi in range(6):
+	for xi in range(6):
 		for yi in range(64):
-			x = (xi - 4) * tube_gap_meters
-			z = (zi - 4) * tube_gap_meters
+			x = (xi - 3) * tube_gap_meters
+			z = (zi - 3) * tube_gap_meters
 			y = (yi - 32) * led_gap_meters
 			result.append('  {"point": [%.4f, %.4f, %.4f]},' % (x, z, y))
 
