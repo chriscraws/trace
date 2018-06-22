@@ -44,8 +44,9 @@ inline Double vl_rand()
 inline Float abs(Float x)
 { return (fabsf(x)); }
 #endif
-inline Double abs(Double x)
-{ return (fabs(x)); }
+#define abs fabs
+// inline Double abs(Double x)
+// { return (fabs(x)); }
 #endif
 #ifdef VL_HAS_ABSF
 inline Float len(Float x)
