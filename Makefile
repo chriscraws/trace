@@ -14,7 +14,11 @@ CFLAGS += -std=c++11
 # Annoying warnings on by default on Mac OS
 CXXFLAGS += -Wno-tautological-constant-out-of-range-compare -Wno-gnu-static-float-init
 
-all: trace layout.json
+all: openpixelcontrol/bin/gl_server trace layout.json
+
+openpixelcontrol/bin/gl_server:
+	cd openpixelcontrol
+	make bin/gl_server
 
 trace:
 	$(CXX) $(CXXFLAGS) src/trace.cpp -o trace $(LDFLAGS)
