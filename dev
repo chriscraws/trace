@@ -7,7 +7,7 @@
 trap 'kill $(jobs -pr)' SIGINT SIGTERM EXIT
 
 full_restart() {
-  kill $(jobs -pr)
+  kill -9 $(jobs -pr)
   make clean
   make
   ./openpixelcontrol/bin/gl_server -l layout.json &
@@ -16,7 +16,7 @@ full_restart() {
 }
 
 restart_trace() {
-  kill $PTRACE
+  kill -9 $PTRACE
   rm ./trace
   rm -rf **.dSYM
   make trace
