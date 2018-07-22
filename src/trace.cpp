@@ -15,9 +15,9 @@ int main(int argc, char **argv)
     EffectRunner r;
 
     Pattern::Test test;
-    Pattern::Fire fire;
+    //Pattern::Fire fire;
 
-    r.addEffect(&fire);
+    r.addEffect(&test);
 
     // Defaults, overridable with command line options
     r.setMaxFrameRate(100);

@@ -14,15 +14,23 @@ CFLAGS += -std=c++11
 # Annoying warnings on by default on Mac OS
 CXXFLAGS += -Wno-tautological-constant-out-of-range-compare -Wno-gnu-static-float-init
 
-all: openpixelcontrol openpixelcontrol/bin/gl_server trace layout.json
+dev: openpixelcontrol/bin/gl_server trace layout.json
 
-openpixelcontrol:
-	git submodule init
-	git submodule update
+all: trace fadecandy-config.json
+
+fadecandy-config.json:
+	./fadecandy-config.py > fadecandy-config.json
 
 openpixelcontrol/bin/gl_server:
-	cd openpixelcontrol
-	make bin/gl_server
+	git submodule init
+	git submodule update
+	make -C openpixelcontrol bin/gl_server
+
+fadecandy/bin/server:
+	git submodule init
+	git submodule update
+	make -C fadecandy/server submodules
+	make -C fadecandy/server
 
 trace:
 	$(CXX) $(CXXFLAGS) src/trace.cpp -o trace $(LDFLAGS)
