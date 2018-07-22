@@ -16,7 +16,7 @@ CXXFLAGS += -Wno-tautological-constant-out-of-range-compare -Wno-gnu-static-floa
 
 dev: openpixelcontrol/bin/gl_server trace layout.json
 
-all: trace fadecandy-config.json
+all: trace fadecandy-config.json layout.json
 
 fadecandy-config.json:
 	./fadecandy-config.py > fadecandy-config.json
