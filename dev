@@ -10,8 +10,8 @@ full_restart() {
   kill -9 $(jobs -pr)
   make clean
   make
-  ./openpixelcontrol/bin/gl_server -l layout.json &
-  ./trace -layout layout.json &
+  ./openpixelcontrol/bin/gl_server -l layout.json -p 8000 &
+  ./trace -layout layout.json -server localhost:8000 &
   PTRACE=$!
 }
 
