@@ -8,6 +8,7 @@
 #include "fadecandy/noise.h"
 
 #include "scenes/test.h"
+#include "scenes/glow.h"
 #include "scenes/fire.h"
 
 int main(int argc, char **argv)
@@ -16,8 +17,9 @@ int main(int argc, char **argv)
 
     Pattern::Test test;
     Pattern::Fire fire;
+    Pattern::Glow glow;
 
-    r.addEffect(&fire);
+    r.addEffect(&glow);
 
     // Defaults, overridable with command line options
     r.setMaxFrameRate(100);
