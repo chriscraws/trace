@@ -19,7 +19,7 @@ dev: openpixelcontrol/bin/gl_server trace layout.json
 all: trace fadecandy-config.json layout.json
 
 fadecandy-config.json:
-	./fadecandy-config.py > fadecandy-config.json
+	./scripts/fadecandy-config.py > fadecandy-config.json
 
 openpixelcontrol/bin/gl_server:
 	git submodule init
@@ -36,7 +36,7 @@ trace:
 	$(CXX) $(CXXFLAGS) src/trace.cpp -o trace $(LDFLAGS)
 
 layout.json:
-	./generate-layout.py > layout.json
+	./scripts/generate-layout.py > layout.json
 
 .PHONY: clean all
 

@@ -8,6 +8,8 @@ https://www.indiegogo.com/projects/trace-burning-man-2018-design-community
 
 On linux ensure the packages gcc, g++, and freeglut3-dev are installed.
 
+The dev script requires `entr` to be installed (`sudo apt install entr`)
+
 
 ## Configuration
 
