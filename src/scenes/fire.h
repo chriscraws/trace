@@ -28,8 +28,8 @@ public:
   virtual void shader(Vec3& rgb, const PixelInfo& p) const {
     // squish space for simplex noise
     // (make larger blobs than default)
-    float x = p.point[0] * 0.8;
-    float y = p.point[1] * 0.8;
+    float x = p.point[0];
+    float y = p.point[1];
     float z = p.point[2];
 
     // make 0 the bottom and 1 the top
@@ -42,7 +42,7 @@ public:
     float speed = 2.0;
 
     // sample perlin noise to get flames
-    float intensity = 0.8 * noise3(x, y, powf(pos, 0.8) - t * speed);
+    float intensity = 0.8 * noise3(x, y, powf(pos, 3.0) - t * speed);
     intensity = powf(intensity, pos * pos * 10);
 
     // add a glowing base (not animated)
@@ -51,13 +51,17 @@ public:
     // set colors
     float hue = 0.1 * (1.0 - cpos);
     float saturation = 1.0;
-    float value = base > intensity ? base : intensity;
+    float value = intensity;
 
     // make the base look better
-    if (value == base) { 
-      hue = powf(0.98 - pos, 0.2);
-      value *= 0.5;
-    }
+    if (pos < 0.5 && value < 0.25) { 
+			float newbase = powf(1.0 - pos, 8.0);
+			newbase = newbase * (3 + noise3(x, y, -t * speed)) / 3.0;
+			value = fmax(newbase, value);
+			saturation = 0.8 + 0.2 * (1.0 - powf(1.0 - pos, 32.0));
+    } else {
+			saturation = 1.0 - powf(1.0 - pos, 32.0);
+		}
 
     hsv2rgb(rgb, hue, saturation, value);
   }

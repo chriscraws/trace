@@ -8,8 +8,11 @@ https://www.indiegogo.com/projects/trace-burning-man-2018-design-community
 
 On linux ensure the packages gcc, g++, and freeglut3-dev are installed.
 
-The dev script requires `entr` to be installed (`sudo apt install entr`)
+The dev script requires `entr` to be installed (`sudo apt install entr` on linux, `brew install entr` on mac)
 
+## Development
+
+Open a terminal to the trace directory and run `./scripts/dev`. This will launch `openpixelcontrol/bin/gl_server` to listen on port 8000. The trace executable will then run - it will exit, recompile, and run again if any `.h` or `.cpp` files inside the trace folder are edited.
 
 ## Configuration
 
