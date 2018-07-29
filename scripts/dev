@@ -11,5 +11,5 @@ make
 ./openpixelcontrol/bin/gl_server -l layout.json -p 8000 &
 
 while true; do
-  find . -regex '.*\(\.cpp\|\.h\)$' | entr -dr ./scripts/restart_trace;
+  find . -name '*.h' -o -name '*.cpp' | entr -dr ./scripts/restart_trace;
 done
