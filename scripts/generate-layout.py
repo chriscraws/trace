@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # The number of LEDS per strip
-LEDS_PER_STRIP = 64
+LEDS_PER_STRIP = 67
 
 # The number of strips, horzontally
 STRIP_COUNT = 6
@@ -10,7 +10,7 @@ STRIP_COUNT = 6
 LED_GAP_METERS = 0.035
 
 # In meters, the horizontal distance between two strips
-STRIP_GAP_METERS = 0.2667
+STRIP_GAP_METERS = 0.2
 
 
 import math
@@ -27,10 +27,10 @@ result = ['[']
 for zi in range(STRIP_COUNT):
 	for xi in range(STRIP_COUNT):
 		for yi in range(LEDS_PER_STRIP):
-			x = (xi - STRIP_COUNT / 2) * STRIP_GAP_METERS
-			z = (zi - STRIP_COUNT / 2) * STRIP_GAP_METERS
-			y = (yi - LEDS_PER_STRIP / 2) * LED_GAP_METERS
-			result.append('  {"point": [%.4f, %.4f, %.4f]},' % (x, z, y))
+			x = (0.5 + xi - STRIP_COUNT / 2) * STRIP_GAP_METERS
+			z = (0.5 + zi - STRIP_COUNT / 2) * STRIP_GAP_METERS
+			y = -(0.5 + yi - LEDS_PER_STRIP / 2) * LED_GAP_METERS
+			result.append('  {"point": [%.4f, %.4f, %.4f]},' % (x, y, z))
 
 # Remove last comma
 result[-1] = result[-1][:-1]
