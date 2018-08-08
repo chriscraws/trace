@@ -26,8 +26,8 @@ static const EGLint configAttribs[] = {
   
 // Width and height of the desired framebuffer
 static const EGLint pbufferAttribs[] = {
-	EGL_WIDTH, 800,
-	EGL_HEIGHT, 600,
+	EGL_WIDTH, 36,
+	EGL_HEIGHT, 67,
 	EGL_NONE,
 };
 
@@ -39,9 +39,12 @@ static const EGLint contextAttribs[] = {
 // The following array holds vec3 data of 
 // three vertex positions
 static const GLfloat vertices[] = {
-   -1.0f, -1.0f, 0.0f,
+  	-1.0f, -1.0f, 0.0f,
 	1.0f, -1.0f, 0.0f,
-	0.0f,  1.0f, 0.0f,
+	-1.0f,  1.0f, 0.0f,
+	1.0f, 1.0f, 0.0f,
+	1.0f, -1.0f, 0.0f,
+	-1.0f,  1.0f, 0.0f,
 };
 
 // The following are GLSL shaders for rendering a triangle on the screen
@@ -176,7 +179,7 @@ int main(int argv, char** argc){
 	// Again, NO ERRRO CHECKING IS DONE! (for the purpose of this example)
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), vertices, GL_STATIC_DRAW);
 	
 	// Get vertex attribute and uniform locations
 	posLoc = glGetAttribLocation(program, "pos");
@@ -184,7 +187,7 @@ int main(int argv, char** argc){
 	
 	// Set the desired color of the triangle to pink
 	// 100% red, 0% green, 50% blue, 100% alpha
-	glUniform4f(colorLoc, 1.0, 0.0f, 0.5, 1.0);
+	glUniform4f(colorLoc, 1.0, 1.0f, 0.5, 1.0);
 	
 	// Set our vertex data
 	glEnableVertexAttribArray(posLoc);
@@ -192,26 +195,35 @@ int main(int argv, char** argc){
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	
 	// Render a triangle consisting of 3 vertices:
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	const unsigned int headerSize = sizeof(OPCClient::Header);
 	
 	// Create buffer to hold entire front buffer pixels
 	// We multiply width and height by 3 to because we use RGB!
-	unsigned char* buffer = (unsigned char*)malloc(desiredWidth * desiredHeight * 3);
+	std::vector<uint8_t> buffer;
+	buffer.resize(headerSize + desiredWidth * desiredHeight * 3);
+	
 	
 	// Copy entire screen
-	glReadPixels(0, 0, desiredWidth, desiredHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	glReadPixels(0, 0, desiredWidth, desiredHeight, GL_RGB, GL_UNSIGNED_BYTE, &buffer[headerSize]);
+
+	OPCClient opc;
+    	OPCClient::Header::view(buffer).init(0, opc.SET_PIXEL_COLORS, 3 * desiredWidth * desiredHeight);
+	opc.resolve("192.168.1.12");
+	opc.tryConnect();
+
+	opc.write(buffer);
+
 	
 	// Write all pixels to file
-	FILE* output = fopen("triangle.raw", "wb");
-	if(output){
-		fwrite(buffer, 1, desiredWidth * desiredHeight * 3, output);
-		fclose(output);
-	} else {
-		fprintf(stderr, "Failed to open file triangle.raw for writing!\n");
-	}
-	
-	// Free copied pixels
-	free(buffer);
+	//FILE* output = fopen("triangle.raw", "wb");
+	//if(output){
+	//	fwrite(buffer, 1, desiredWidth * desiredHeight * 3, output);
+	//	fclose(output);
+	//} else {
+	//	fprintf(stderr, "Failed to open file triangle.raw for writing!\n");
+	//}
 	
 	// Cleanup
 	eglDestroyContext(display, context);
