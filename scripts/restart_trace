@@ -2,4 +2,4 @@
 rm ./trace
 rm -rf **.dSYM
 make trace
-./trace -layout layout.json -server localhost:8000
+./trace
