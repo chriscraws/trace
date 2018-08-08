@@ -58,8 +58,9 @@ namespace {
 
   static const char* fragmentShaderCode = STRINGIFY(
       uniform vec4 color;
+      uniform float time;
       void main() {
-      gl_FragColor = vec4(color);
+      gl_FragColor = vec4(fract(time));
       }
       );
 
@@ -91,7 +92,7 @@ namespace {
   int major, minor;
   int desiredWidth, desiredHeight;
   GLuint program, vert, frag, vbo;
-  GLint posLoc, colorLoc, result;
+  GLint posLoc, colorLoc, result, timeLoc;
 }
 
 namespace gl {
@@ -187,6 +188,7 @@ namespace gl {
     // Get vertex attribute and uniform locations
     posLoc = glGetAttribLocation(program, "pos");
     colorLoc = glGetUniformLocation(program, "color");
+    timeLoc = glGetUniformLocation(program, "time");
 
     // Set the desired color of the triangle to pink
     // 100% red, 0% green, 50% blue, 100% alpha
@@ -199,10 +201,11 @@ namespace gl {
 
   }
 
-  void readFrame(uint8_t* buffer) {
+  void readFrame(float time, uint8_t* buffer) {
     // Clear whole screen (front buffer)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUniform1f(timeLoc, time);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glReadPixels(0, 0, desiredWidth, desiredHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer);
   }

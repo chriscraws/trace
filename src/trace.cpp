@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include "fadecandy/opc_client.h"
 #include "gl.h"
@@ -22,9 +23,29 @@ int main(int argv, char** argc){
 
   gl::init();
   gl::createProgram();
-  gl::readFrame(OPCClient::Header::view(buffer).data());
 
-  opc.write(buffer);
+  float time, delta = 0.0;
+  struct timeval now;
+  gettimeofday(&now, 0);
+  struct timeval lastTime = now;
+
+  while (time < 10.0) {
+    gettimeofday(&now, 0);
+    float delta = (now.tv_sec - lastTime.tv_sec)
+        + 1e-6 * (now.tv_usec - lastTime.tv_usec);
+    lastTime = now;
+
+    // Max timestep; jump ahead if we get too far behind.
+    const float maxStep = 0.1;
+    if (delta > maxStep) {
+        delta = maxStep;
+    }
+
+    time += delta;
+
+    gl::readFrame(time, OPCClient::Header::view(buffer).data());
+    opc.write(buffer);
+  }
 
   gl::exit();
 }
