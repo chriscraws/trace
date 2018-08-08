@@ -5,6 +5,8 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
+#include "fadecandy/effect_runner.h"
+
 namespace {
   static const EGLint configAttribs[] = {
     EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
@@ -26,8 +28,8 @@ namespace {
 
   // Width and height of the desired framebuffer
   static const EGLint pbufferAttribs[] = {
-    EGL_WIDTH, 36,
-    EGL_HEIGHT, 67,
+    EGL_WIDTH, 12 * 67,
+    EGL_HEIGHT, 2,
     EGL_NONE,
   };
 
@@ -60,7 +62,7 @@ namespace {
       uniform vec4 color;
       uniform float time;
       void main() {
-      gl_FragColor = vec4(fract(time));
+      gl_FragColor = vec4(vec3(0.5 + 0.5 * sin(time)), 1.0);
       }
       );
 
@@ -92,7 +94,8 @@ namespace {
   int major, minor;
   int desiredWidth, desiredHeight;
   GLuint program, vert, frag, vbo;
-  GLint posLoc, colorLoc, result, timeLoc;
+  GLint posLoc, colorLoc, result, timeLoc, pointLoc;
+  EffectRunner runner;
 }
 
 namespace gl {
@@ -161,6 +164,22 @@ namespace gl {
     if(desiredWidth != viewport[2] || desiredHeight != viewport[3]){
       fprintf(stderr, "Error! The glViewport/glGetIntegerv are not working! EGL might be faulty!\n");
     }
+
+    // load layout
+    runner.setLayout("layout.json");
+    const Effect::PixelInfoVec& pixelInfo = runner.getPixelInfo();
+
+    // copy location values
+    std::vector<float> pixelLocation;
+    pixelLocation.resize(dataSize);
+    for (int i = 0; i < pixelInfo.size(); i++) {
+      int index = 3 * i;
+      pixelLocation[index] = pixelInfo[index].point[0];
+      pixelLocation[index + 1] = pixelInfo[index].point[1];
+      pixelLocation[index + 2] = pixelInfo[index].point[2];
+    }
+    
+    // create vbo
 
     return EXIT_SUCCESS;
   }

@@ -1,12 +1,19 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <signal.h>
 
 #include "fadecandy/opc_client.h"
 #include "gl.h"
 
+void sigint_handler(int sig_num) {
+  exit(gl::exit());
+}
 
 int main(int argv, char** argc){
+
+  signal(SIGINT, sigint_handler);
+
   const unsigned int headerSize = sizeof(OPCClient::Header);
 
   printf("running trace\n");
@@ -28,8 +35,11 @@ int main(int argv, char** argc){
   struct timeval now;
   gettimeofday(&now, 0);
   struct timeval lastTime = now;
+  float filteredTimeDelta;
+  float minTimeDelta = 1.0 / 300.0;
+  float currentDelay;
 
-  while (time < 10.0) {
+  while (true) {
     gettimeofday(&now, 0);
     float delta = (now.tv_sec - lastTime.tv_sec)
         + 1e-6 * (now.tv_usec - lastTime.tv_usec);
@@ -45,6 +55,24 @@ int main(int argv, char** argc){
 
     gl::readFrame(time, OPCClient::Header::view(buffer).data());
     opc.write(buffer);
+
+    // Low-pass filter for timeDelta, to estimate our frame rate
+    const float filterGain = 0.05;
+    filteredTimeDelta += (delta - filteredTimeDelta) * filterGain;
+
+    // Negative feedback loop to adjust the delay until we hit a target frame rate.
+    // This lets us hit the target rate smoothly, without a lot of jitter between frames.
+    // If we calculated a new delay value on each frame, we'd easily end up alternating
+    // between too-long and too-short frame delays.
+    currentDelay += (minTimeDelta - delta) * filterGain;
+
+    // Make sure filteredTimeDelta >= currentDelay. (The "busy time" estimate will be >= 0)
+    filteredTimeDelta = std::max(filteredTimeDelta, currentDelay);
+
+    // Add the extra delay, if we have one. This is how we throttle down the frame rate.
+    if (currentDelay > 0) {
+        usleep(currentDelay * 1e6);
+    }
   }
 
   gl::exit();
