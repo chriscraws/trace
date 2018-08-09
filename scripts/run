@@ -1,0 +1,5 @@
+#!/bin/bash
+
+while true; do
+  echo shaders/* | entr -c -d -r ./scripts/restart_trace;
+done

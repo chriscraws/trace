@@ -93,8 +93,36 @@ namespace {
   GLint posLoc, colorLoc, timeLoc, pointPosLoc;
   EffectRunner runner;
 
-  uint8_t pixelLocationToByte(float value) {
-    return (uint8_t) (255.0 * (0.5 + value / TraceUtil::halfwidth));
+  void dumpErrors() {
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+      printf("GL error: ");
+      switch (err) {
+        case GL_INVALID_ENUM:
+          printf("invalid enum");
+          break;
+        case GL_INVALID_VALUE:
+          printf("invalid value");
+          break;
+        case GL_INVALID_OPERATION:
+          printf("invalid operation");
+          break;
+        case GL_OUT_OF_MEMORY:
+          printf("out of memory");
+          break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+          printf("invalid framebuffer op");
+          break;
+        default:
+          break;
+      }
+      printf("\n");
+    }
+
+  }
+
+  GLubyte pixelLocationToByte(float value) {
+    return (GLubyte) (255.0 * (0.5 + value / TraceUtil::halfheight));
   }
 }
 
@@ -129,13 +157,6 @@ namespace gl {
       eglTerminate(display);
       return EXIT_FAILURE;
     }
-
-    // print surface dimensions
-    EGLint surfaceHeight, surfaceWidth;
-    eglQuerySurface(display, surface, EGL_HEIGHT, &surfaceHeight);
-    eglQuerySurface(display, surface, EGL_WIDTH, &surfaceWidth);
-    printf("Width: %d, Height %d\n", surfaceWidth, surfaceHeight);
-
 
     eglBindAPI(EGL_OPENGL_API);
 
@@ -173,41 +194,48 @@ namespace gl {
     }
 
     // load layout
+    printf("loading layout\n");
     runner.setLayout("layout.json");
     const Effect::PixelInfoVec& pixelInfo = runner.getPixelInfo();
 
     // copy location values
-    std::vector<uint8_t> pixelLocation;
-    pixelLocation.resize(byteCount);
-    for (uint8_t i = 0; i < pixelInfo.size(); i++) {
-      uint8_t index = 3 * i;
-      pixelLocation[index] =     255; // pixelLocationToByte(pixelInfo[index].point[0]);
-      pixelLocation[index + 1] = 255; // pixelLocationToByte(pixelInfo[index].point[1]);
-      pixelLocation[index + 2] = 255; // pixelLocationToByte(pixelInfo[index].point[2]);
+    const int pixelcount = 10681;
+    GLubyte pixelLocation[pixelcount];
+    for (int i = 0; i < pixelInfo.size(); i++) {
+      int index = 3 * i;
+      pixelLocation[index] =     255 * ((float) index / (float) pixelInfo.size());//pixelLocationToByte(pixelInfo[index].point[0]);
+      pixelLocation[index + 1] = 255 * ((float) index / (float) pixelInfo.size());//pixelLocationToByte(pixelInfo[index].point[1]);
+      pixelLocation[index + 2] = 255 * ((float) index / (float) pixelInfo.size());//pixelLocationToByte(pixelInfo[index].point[2]);
     }
-    
+
+    printf("creating texture\n");
+
     // create texture
     glGenTextures(1, &pointPositionTexture);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pointPositionTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+
     glTexImage2D(
       GL_TEXTURE_2D, /* target */
       0, /* level of detail (mipmap) */
       GL_RGB, /* internalFormat */
-      pbufwidth, /* width */
-      pbufheight, /* height */
+      (GLsizei) pbufwidth, /* width */
+      (GLsizei) pbufheight, /* height */
       0, /* border must be 0 */
       GL_RGB, /* format must match internalFormat */
       GL_UNSIGNED_BYTE, /* type */
       &pixelLocation[0] /* data */
     );
 
+    dumpErrors();
 
     return EXIT_SUCCESS;
   }
 
   int createProgram(const char* fragSource) {
-    printf("Fragment Shader:\n%s\n\n", fragSource);
     program = glCreateProgram();
     glUseProgram(program);
     vert = glCreateShader(GL_VERTEX_SHADER);
@@ -239,7 +267,7 @@ namespace gl {
     posLoc = glGetAttribLocation(program, "aPos");
     colorLoc = glGetUniformLocation(program, "color");
     timeLoc = glGetUniformLocation(program, "time");
-    pointPosLoc = glGetUniformLocation(program, "pos");
+    pointPosLoc = glGetUniformLocation(program, "spos");
 
     // set up the texture
     glUniform1i(pointPosLoc, 0);
@@ -258,7 +286,7 @@ namespace gl {
   
   void readFrame(float time, uint8_t* buffer) {
     // Clear whole screen (front buffer)
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUniform1f(timeLoc, time);
     glDrawArrays(GL_TRIANGLES, 0, 6);

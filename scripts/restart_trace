@@ -4,7 +4,10 @@ for filename in ./shaders/*.frag; do
   glslangValidator "$filename" || exit;
 done
 
-rm ./trace
-rm -rf **.dSYM
-make trace && clear
+if [ "$1" == "-r" ]; then
+  rm ./trace
+  rm -rf **.dSYM
+  make trace && clear
+fi
+
 ./trace
