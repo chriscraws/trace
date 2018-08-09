@@ -56,17 +56,21 @@ namespace {
   // The following are GLSL shaders for rendering a triangle on the screen
 #define STRINGIFY(x) #x
   static const char* vertexShaderCode = STRINGIFY(
-      attribute vec3 pos;
+      attribute vec3 aPos;
       void main() {
-      gl_Position = vec4(pos, 1.0);
+      gl_Position = vec4(aPos, 1.0);
       }
       );
 
   static const char* fragmentShaderCode = STRINGIFY(
       uniform vec4 color;
       uniform float time;
+      uniform sampler2D pos;
+      float v(float t) {
+        return 0.5 + 0.5 * sin(t);
+      }
       void main() {
-      gl_FragColor = vec4(vec3(0.5 + 0.5 * sin(time)), 1.0);
+        gl_FragColor = vec4(vec3(v(time)), 1.0);
       }
       );
 
@@ -97,9 +101,13 @@ namespace {
   EGLContext context;
   int major, minor;
   int desiredWidth, desiredHeight;
-  GLuint program, vert, frag, vbo;
-  GLint posLoc, colorLoc, timeLoc;
+  GLuint program, vert, frag, vbo, pointPositionTexture;
+  GLint posLoc, colorLoc, timeLoc, pointPosLoc;
   EffectRunner runner;
+
+  uint8_t pixelLocationToByte(float value) {
+    return (uint8_t) (255.0 * (0.5 + value / TraceUtil::halfwidth));
+  }
 }
 
 namespace gl {
@@ -181,16 +189,31 @@ namespace gl {
     const Effect::PixelInfoVec& pixelInfo = runner.getPixelInfo();
 
     // copy location values
-    std::vector<float> pixelLocation;
+    std::vector<uint8_t> pixelLocation;
     pixelLocation.resize(byteCount);
     for (uint8_t i = 0; i < pixelInfo.size(); i++) {
       uint8_t index = 3 * i;
-      pixelLocation[index] = pixelInfo[index].point[0];
-      pixelLocation[index + 1] = pixelInfo[index].point[1];
-      pixelLocation[index + 2] = pixelInfo[index].point[2];
+      pixelLocation[index] =     255; // pixelLocationToByte(pixelInfo[index].point[0]);
+      pixelLocation[index + 1] = 255; // pixelLocationToByte(pixelInfo[index].point[1]);
+      pixelLocation[index + 2] = 255; // pixelLocationToByte(pixelInfo[index].point[2]);
     }
     
-    // create vbo
+    // create texture
+    glGenTextures(1, &pointPositionTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, pointPositionTexture);
+    glTexImage2D(
+      GL_TEXTURE_2D, /* target */
+      0, /* level of detail (mipmap) */
+      GL_RGB, /* internalFormat */
+      pbufwidth, /* width */
+      pbufheight, /* height */
+      0, /* border must be 0 */
+      GL_RGB, /* format must match internalFormat */
+      GL_UNSIGNED_BYTE, /* type */
+      &pixelLocation[0] /* data */
+    );
+
 
     return EXIT_SUCCESS;
   }
@@ -209,6 +232,13 @@ namespace gl {
     glLinkProgram(program);
     glUseProgram(program);
 
+    GLint status;
+    glGetShaderiv(frag, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE) {
+      printf("Fragment shader compilation failed.\n");
+    }
+
+
     // Create Vertex Buffer Object
     // Again, NO ERRRO CHECKING IS DONE! (for the purpose of this example)
     glGenBuffers(1, &vbo);
@@ -216,9 +246,13 @@ namespace gl {
     glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), vertices, GL_STATIC_DRAW);
 
     // Get vertex attribute and uniform locations
-    posLoc = glGetAttribLocation(program, "pos");
+    posLoc = glGetAttribLocation(program, "aPos");
     colorLoc = glGetUniformLocation(program, "color");
     timeLoc = glGetUniformLocation(program, "time");
+    pointPosLoc = glGetUniformLocation(program, "pos");
+
+    // set up the texture
+    glUniform1i(pointPosLoc, 0);
 
     // Set the desired color of the triangle to pink
     // 100% red, 0% green, 50% blue, 100% alpha
@@ -228,8 +262,15 @@ namespace gl {
     glEnableVertexAttribArray(posLoc);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
   }
+  
+  //  printf("%d\n", GL_INVALID_ENUM);
+  //  printf("%d\n", GL_INVALID_FRAMEBUFFER_OPERATION);
+  //  printf("%d\n", GL_INVALID_VALUE);
+  //  printf("%d\n", GL_INVALID_OPERATION);
+  //  printf("%d\n", GL_OUT_OF_MEMORY);
+  //  printf("%d\n", GL_NO_ERROR);
+  //  printf("GL Error: %d\n", glGetError());
 
   void readFrame(float time, uint8_t* buffer) {
     // Clear whole screen (front buffer)
