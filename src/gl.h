@@ -206,7 +206,7 @@ namespace gl {
     return EXIT_SUCCESS;
   }
 
-  void createProgram(const char* fragSource) {
+  int createProgram(const char* fragSource) {
     printf("Fragment Shader:\n%s\n\n", fragSource);
     program = glCreateProgram();
     glUseProgram(program);
@@ -221,13 +221,14 @@ namespace gl {
     glLinkProgram(program);
     glUseProgram(program);
 
-    GLint status;
-    glGetShaderiv(frag, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE) {
-      printf("Fragment shader compilation failed.\n");
+    glValidateProgram(program);
+    GLint pstatus;
+    glGetProgramiv(program, GL_VALIDATE_STATUS, &pstatus);
+    if (pstatus == GL_FALSE) {
+      printf("Invalid program state\n");
+      return EXIT_FAILURE;
     }
-
-
+      
     // Create Vertex Buffer Object
     // Again, NO ERRRO CHECKING IS DONE! (for the purpose of this example)
     glGenBuffers(1, &vbo);
@@ -251,16 +252,10 @@ namespace gl {
     glEnableVertexAttribArray(posLoc);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    return EXIT_SUCCESS;
   }
   
-  //  printf("%d\n", GL_INVALID_ENUM);
-  //  printf("%d\n", GL_INVALID_FRAMEBUFFER_OPERATION);
-  //  printf("%d\n", GL_INVALID_VALUE);
-  //  printf("%d\n", GL_INVALID_OPERATION);
-  //  printf("%d\n", GL_OUT_OF_MEMORY);
-  //  printf("%d\n", GL_NO_ERROR);
-  //  printf("GL Error: %d\n", glGetError());
-
   void readFrame(float time, uint8_t* buffer) {
     // Clear whole screen (front buffer)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
