@@ -5,6 +5,7 @@
 
 #include "fadecandy/opc_client.h"
 #include "gl.h"
+#include "load.h"
 
 void sigint_handler(int sig_num) {
   exit(gl::exit());
@@ -29,7 +30,10 @@ int main(int argv, char** argc){
   opc.tryConnect();
 
   gl::init();
-  gl::createProgram();
+
+  printf("loading shaders\n");
+  const char* fragSource = load::file("shaders/test.frag");
+  gl::createProgram(fragSource);
 
   float time = 0.0, delta = 0.0;
   struct timeval now;

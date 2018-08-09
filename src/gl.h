@@ -62,18 +62,6 @@ namespace {
       }
       );
 
-  static const char* fragmentShaderCode = STRINGIFY(
-      uniform vec4 color;
-      uniform float time;
-      uniform sampler2D pos;
-      float v(float t) {
-        return 0.5 + 0.5 * sin(t);
-      }
-      void main() {
-        gl_FragColor = vec4(vec3(v(time)), 1.0);
-      }
-      );
-
   static const char* eglGetErrorStr(){
     switch(eglGetError()){
       case EGL_SUCCESS: return "The last function succeeded without error.";
@@ -218,14 +206,15 @@ namespace gl {
     return EXIT_SUCCESS;
   }
 
-  void createProgram() {
+  void createProgram(const char* fragSource) {
+    printf("Fragment Shader:\n%s\n\n", fragSource);
     program = glCreateProgram();
     glUseProgram(program);
     vert = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vert, 1, &vertexShaderCode, NULL);
     glCompileShader(vert);
     frag = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frag, 1, &fragmentShaderCode, NULL);
+    glShaderSource(frag, 1, &fragSource, NULL);
     glCompileShader(frag);
     glAttachShader(program, frag);
     glAttachShader(program, vert);
