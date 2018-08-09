@@ -5,6 +5,7 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
+#include "constants.h"
 #include "fadecandy/effect_runner.h"
 
 namespace {
@@ -13,7 +14,6 @@ namespace {
     EGL_BLUE_SIZE, 8,
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,
-    EGL_DEPTH_SIZE, 8,
 
     // Uncomment the following to enable MSAA 
     //EGL_SAMPLE_BUFFERS, 1, // <-- Must be set to 1 to enable multisampling!
@@ -26,10 +26,14 @@ namespace {
     EGL_NONE
   }; 
 
+  static const EGLint pbufwidth = TOP_TUBE_COUNT + GROUND_TUBE_COUNT;
+  static const EGLint pbufheight  = LEDS_PER_TUBE + GROUND_LED_COUNT;
+  static const EGLint pbufsize = pbufwidth * pbufheight;
+
   // Width and height of the desired framebuffer
   static const EGLint pbufferAttribs[] = {
-    EGL_WIDTH, 12 * 67,
-    EGL_HEIGHT, 2,
+    EGL_WIDTH, pbufwidth,
+    EGL_HEIGHT, pbufheight,
     EGL_NONE,
   };
 
@@ -94,21 +98,21 @@ namespace {
   int major, minor;
   int desiredWidth, desiredHeight;
   GLuint program, vert, frag, vbo;
-  GLint posLoc, colorLoc, result, timeLoc, pointLoc;
+  GLint posLoc, colorLoc, timeLoc;
   EffectRunner runner;
 }
 
 namespace gl {
-  const unsigned int dataSize = 3 * 36 * 67;
+  static const EGLint byteCount = pbufsize * 3;
 
   int init() {
     if((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY){
-      fprintf(stderr, "Failed to get EGL display! Error: %s\n", eglGetErrorStr);
+      fprintf(stderr, "Failed to get EGL display! Error: %s\n", eglGetErrorStr());
       return EXIT_FAILURE;
     }
 
     if(eglInitialize(display, &major, &minor) == EGL_FALSE){
-      fprintf(stderr, "Failed to get EGL version! Error: %s\n", eglGetErrorStr);
+      fprintf(stderr, "Failed to get EGL version! Error: %s\n", eglGetErrorStr());
       eglTerminate(display);
       return EXIT_FAILURE;
     } 
@@ -118,23 +122,30 @@ namespace gl {
     EGLint numConfigs;
     EGLConfig config;
     if(!eglChooseConfig(display, configAttribs, &config, 1, &numConfigs)){
-      fprintf(stderr, "Failed to get EGL config! Error: %s\n", eglGetErrorStr);
+      fprintf(stderr, "Failed to get EGL config! Error: %s\n", eglGetErrorStr());
       eglTerminate(display);
       return EXIT_FAILURE;
     }
 
     surface = eglCreatePbufferSurface(display, config, pbufferAttribs);
     if(surface == EGL_NO_SURFACE){
-      fprintf(stderr, "Failed to create EGL surface! Error: %s\n", eglGetErrorStr);
+      fprintf(stderr, "Failed to create EGL surface! Error: %s\n", eglGetErrorStr());
       eglTerminate(display);
       return EXIT_FAILURE;
     }
+
+    // print surface dimensions
+    EGLint surfaceHeight, surfaceWidth;
+    eglQuerySurface(display, surface, EGL_HEIGHT, &surfaceHeight);
+    eglQuerySurface(display, surface, EGL_WIDTH, &surfaceWidth);
+    printf("Width: %d, Height %d\n", surfaceWidth, surfaceHeight);
+
 
     eglBindAPI(EGL_OPENGL_API);
 
     context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
     if(context == EGL_NO_CONTEXT){
-      fprintf(stderr, "Failed to create EGL context! Error: %s\n", eglGetErrorStr);
+      fprintf(stderr, "Failed to create EGL context! Error: %s\n", eglGetErrorStr());
       eglDestroySurface(display, surface);
       eglTerminate(display);
       return EXIT_FAILURE;
@@ -171,9 +182,9 @@ namespace gl {
 
     // copy location values
     std::vector<float> pixelLocation;
-    pixelLocation.resize(dataSize);
-    for (int i = 0; i < pixelInfo.size(); i++) {
-      int index = 3 * i;
+    pixelLocation.resize(byteCount);
+    for (uint8_t i = 0; i < pixelInfo.size(); i++) {
+      uint8_t index = 3 * i;
       pixelLocation[index] = pixelInfo[index].point[0];
       pixelLocation[index + 1] = pixelInfo[index].point[1];
       pixelLocation[index + 2] = pixelInfo[index].point[2];

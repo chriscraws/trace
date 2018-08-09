@@ -21,27 +21,28 @@ int main(int argv, char** argc){
   // Create buffer to hold entire front buffer pixels
   // We multiply width and height by 3 to because we use RGB!
   std::vector<uint8_t> buffer;
-  buffer.resize(headerSize + gl::dataSize);
+  buffer.resize(headerSize + gl::byteCount);
 
   OPCClient opc;
-  OPCClient::Header::view(buffer).init(0, opc.SET_PIXEL_COLORS, gl::dataSize);
+  OPCClient::Header::view(buffer).init(0, opc.SET_PIXEL_COLORS, gl::byteCount);
   opc.resolve("192.168.1.12");
   opc.tryConnect();
 
   gl::init();
   gl::createProgram();
 
-  float time, delta = 0.0;
+  float time = 0.0, delta = 0.0;
   struct timeval now;
   gettimeofday(&now, 0);
   struct timeval lastTime = now;
   float filteredTimeDelta;
   float minTimeDelta = 1.0 / 300.0;
-  float currentDelay;
+  float currentDelay = 0.0;
+  const float filterGain = 0.05;
 
   while (true) {
     gettimeofday(&now, 0);
-    float delta = (now.tv_sec - lastTime.tv_sec)
+    delta = (now.tv_sec - lastTime.tv_sec)
         + 1e-6 * (now.tv_usec - lastTime.tv_usec);
     lastTime = now;
 
@@ -57,7 +58,6 @@ int main(int argv, char** argc){
     opc.write(buffer);
 
     // Low-pass filter for timeDelta, to estimate our frame rate
-    const float filterGain = 0.05;
     filteredTimeDelta += (delta - filteredTimeDelta) * filterGain;
 
     // Negative feedback loop to adjust the delay until we hit a target frame rate.
