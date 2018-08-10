@@ -122,7 +122,9 @@ namespace {
   }
 
   GLubyte pixelLocationToByte(float value) {
-    return (GLubyte) (255.0 * (0.5 + value / TraceUtil::halfheight));
+    float normalized = std::abs(value / TraceUtil::halfheight);
+    GLubyte out = 255 * normalized;
+    return out;
   }
 }
 
@@ -198,14 +200,13 @@ namespace gl {
     runner.setLayout("layout.json");
     const Effect::PixelInfoVec& pixelInfo = runner.getPixelInfo();
 
-    // copy location values
-    const int pixelcount = 10681;
-    GLubyte pixelLocation[pixelcount];
+    GLubyte pixelLocation[byteCount];
     for (int i = 0; i < pixelInfo.size(); i++) {
       int index = 3 * i;
-      pixelLocation[index] =     255;//pixelLocationToByte(pixelInfo[index].point[0]);
-      pixelLocation[index + 1] = 255;//pixelLocationToByte(pixelInfo[index].point[1]);
-      pixelLocation[index + 2] = 255;//pixelLocationToByte(pixelInfo[index].point[2]);
+      Vec3 l = pixelInfo[i].point;
+      pixelLocation[index] =     pixelLocationToByte(l[0]);
+      pixelLocation[index + 1] = pixelLocationToByte(l[1]);
+      pixelLocation[index + 2] = pixelLocationToByte(l[2]);
     }
 
     printf("creating texture\n");

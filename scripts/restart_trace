@@ -1,13 +1,13 @@
 #!/bin/bash
 
-for filename in ./shaders/*.frag; do
-  glslangValidator "$filename" || exit;
-done
-
+# Recompile if -r flag is passed
 if [ "$1" == "-r" ]; then
   rm ./trace
   rm -rf **.dSYM
-  make trace && clear
+  make trace && clear || exit
 fi
 
-./trace
+# Launch trace
+while true; do
+  echo shaders/* | entr -c -d -r ./scripts/run;
+done

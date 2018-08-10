@@ -1,5 +1,9 @@
 #!/bin/bash
 
-while true; do
-  echo shaders/* | entr -c -d -r ./scripts/restart_trace;
+# Validate GLSL
+for filename in ./shaders/*.frag; do
+  glslangValidator "$filename" || exit;
 done
+
+# Run
+./trace

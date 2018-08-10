@@ -40,7 +40,7 @@ for zi in range(STRIP_COUNT):
 
 for t in range(GROUND_TUBE_COUNT):
   for p in range(GROUND_LED_COUNT):
-    result.append('  {"point": [%.4f, %.4f, %.4f]},' % (50, 50, 50))
+    result.append('  {"point": [%.4f, %.4f, %.4f]},' & (50, 50, 50))
 
 # Remove last comma
 result[-1] = result[-1][:-1]

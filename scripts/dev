@@ -6,10 +6,10 @@
 # Ensure that background processes die with script exit
 # trap 'kill -n 9 $(jobs -pr)' SIGINT SIGTERM EXIT
 
-make clean
-make
-./openpixelcontrol/bin/gl_server -l layout.json -p 8000 &
+#make clean
+#make
+#./openpixelcontrol/bin/gl_server -l layout.json -p 8000 &
 
 while true; do
-  find . -name '*.h' -o -name '*.cpp' | entr -dr ./scripts/restart_trace;
+  find . -name '*.h' -o -name '*.cpp' | entr -drc ./scripts/restart_trace -r;
 done
