@@ -203,12 +203,16 @@ namespace gl {
     GLubyte pixelLocation[pixelcount];
     for (int i = 0; i < pixelInfo.size(); i++) {
       int index = 3 * i;
-      pixelLocation[index] =     255 * ((float) index / (float) pixelInfo.size());//pixelLocationToByte(pixelInfo[index].point[0]);
-      pixelLocation[index + 1] = 255 * ((float) index / (float) pixelInfo.size());//pixelLocationToByte(pixelInfo[index].point[1]);
-      pixelLocation[index + 2] = 255 * ((float) index / (float) pixelInfo.size());//pixelLocationToByte(pixelInfo[index].point[2]);
+      pixelLocation[index] =     255;//pixelLocationToByte(pixelInfo[index].point[0]);
+      pixelLocation[index + 1] = 255;//pixelLocationToByte(pixelInfo[index].point[1]);
+      pixelLocation[index + 2] = 255;//pixelLocationToByte(pixelInfo[index].point[2]);
     }
 
     printf("creating texture\n");
+
+    // set pack and upack settings
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // create texture
     glGenTextures(1, &pointPositionTexture);

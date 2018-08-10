@@ -4,6 +4,7 @@ uniform float time;
 uniform sampler2D spos;
 
 void main() {
-  vec2 uv = gl_FragCoord.xy / vec2(40.0, 89.0);
-  gl_FragColor = vec4(vec3(texture2D(spos, uv).y), 1.0);
+  vec2 uv = gl_FragCoord.xy / vec2(89.0, 40.0);
+  vec3 tex = texture2D(spos, uv).rgb;
+  gl_FragColor = vec4(tex, 1.0);
 }

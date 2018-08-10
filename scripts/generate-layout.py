@@ -12,6 +12,12 @@ LED_GAP_METERS = 0.035
 # In meters, the horizontal distance between two strips
 STRIP_GAP_METERS = 0.2
 
+# Number of leds per ground tube
+GROUND_LED_COUNT = 22
+
+# Number of ground tubes
+GROUND_TUBE_COUNT = 4
+
 
 import math
 import optparse
@@ -31,6 +37,10 @@ for zi in range(STRIP_COUNT):
 			z = (0.5 + zi - STRIP_COUNT / 2) * STRIP_GAP_METERS
 			y = -(0.5 + yi - LEDS_PER_STRIP / 2) * LED_GAP_METERS
 			result.append('  {"point": [%.4f, %.4f, %.4f]},' % (x, y, z))
+
+for t in range(GROUND_TUBE_COUNT):
+  for p in range(GROUND_LED_COUNT):
+    result.append('  {"point": [%.4f, %.4f, %.4f]},' % (50, 50, 50))
 
 # Remove last comma
 result[-1] = result[-1][:-1]

@@ -59,6 +59,8 @@ int main(int argv, char** argc){
     time += delta;
 
     gl::readFrame(time, OPCClient::Header::view(buffer).data());
+    // data is in rows, left to right, down up -> reorder plz
+
     opc.write(buffer);
 
     // Low-pass filter for timeDelta, to estimate our frame rate
