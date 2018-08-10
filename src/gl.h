@@ -14,14 +14,6 @@ namespace {
     EGL_BLUE_SIZE, 8,
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,
-
-    // Uncomment the following to enable MSAA 
-    //EGL_SAMPLE_BUFFERS, 1, // <-- Must be set to 1 to enable multisampling!
-    //EGL_SAMPLES, 4, // <-- Number of samples
-
-    // Uncomment the following to enable stencil buffer
-    //EGL_STENCIL_SIZE, 1,
-
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
     EGL_NONE
   }; 
@@ -121,15 +113,18 @@ namespace {
 
   }
 
-  GLubyte pixelLocationToByte(float value) {
-    float normalized = std::abs(value / TraceUtil::halfheight);
-    GLubyte out = 255 * normalized;
-    return out;
+  GLubyte value_to_byte(float value) {
+    float normalized = value / TraceUtil::halfheight;
+    normalized /= 2.0;
+    normalized += 0.5;
+    return 255 * normalized;
   }
 }
 
 namespace gl {
-  static const EGLint byteCount = pbufsize * 3;
+  static const EGLint width = pbufwidth;
+  static const EGLint height = pbufheight;
+  static const EGLint byteCount = pbufsize * 4;
 
   int init() {
     if((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY){
@@ -201,19 +196,21 @@ namespace gl {
     const Effect::PixelInfoVec& pixelInfo = runner.getPixelInfo();
 
     GLubyte pixelLocation[byteCount];
-    for (int i = 0; i < pixelInfo.size(); i++) {
-      int index = 3 * i;
-      Vec3 l = pixelInfo[i].point;
-      pixelLocation[index] =     pixelLocationToByte(l[0]);
-      pixelLocation[index + 1] = pixelLocationToByte(l[1]);
-      pixelLocation[index + 2] = pixelLocationToByte(l[2]);
+    for (Effect::PixelInfoIter i = pixelInfo.begin(), e = pixelInfo.end(); i != e; ++i) {
+
+      const Effect::PixelInfo &p = *i;
+      for (unsigned int j = 0; j < 4; j++) {
+        pixelLocation[p.index * 4 + j] = value_to_byte(p.point[j]);
+      }
     }
+
+    printf("\n");
 
     printf("creating texture\n");
 
     // set pack and upack settings
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    //glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // create texture
     glGenTextures(1, &pointPositionTexture);
@@ -226,11 +223,11 @@ namespace gl {
     glTexImage2D(
       GL_TEXTURE_2D, /* target */
       0, /* level of detail (mipmap) */
-      GL_RGB, /* internalFormat */
+      GL_RGBA, /* internalFormat */
       (GLsizei) pbufwidth, /* width */
       (GLsizei) pbufheight, /* height */
       0, /* border must be 0 */
-      GL_RGB, /* format must match internalFormat */
+      GL_RGBA, /* format must match internalFormat */
       GL_UNSIGNED_BYTE, /* type */
       &pixelLocation[0] /* data */
     );
@@ -295,7 +292,7 @@ namespace gl {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUniform1f(timeLoc, time);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    glReadPixels(0, 0, desiredWidth, desiredHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+    glReadPixels(0, 0, desiredWidth, desiredHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
   }
 
 

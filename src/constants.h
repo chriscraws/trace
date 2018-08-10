@@ -23,6 +23,7 @@ namespace TraceUtil {
   const float halfheight = height * 0.5;
   const float width = (STRIP_COUNT - 1) * LED_GAP_METERS;
   const float halfwidth = width * 0.5;
+  const float led_gap_meters = LED_GAP_METERS;
 
   float smoothstep(float low, float high, float v) {
     return 0;

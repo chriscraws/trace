@@ -25,8 +25,8 @@ int main(int argv, char** argc){
   buffer.resize(headerSize + gl::byteCount);
 
   OPCClient opc;
-  OPCClient::Header::view(buffer).init(0, opc.SET_PIXEL_COLORS, gl::byteCount);
-  opc.resolve("192.168.1.12");
+  OPCClient::Header::view(buffer).init(0, opc.SET_PIXEL_COLORS, gl::width * gl::height * 3);
+  opc.resolve("10.0.0.1");
   opc.tryConnect();
 
   gl::init();
@@ -44,6 +44,9 @@ int main(int argv, char** argc){
   float currentDelay = 0.0;
   const float filterGain = 0.05;
 
+  bool first = true;
+  uint8_t read_buffer[gl::byteCount];
+
   while (true) {
     gettimeofday(&now, 0);
     delta = (now.tv_sec - lastTime.tv_sec)
@@ -58,7 +61,14 @@ int main(int argv, char** argc){
 
     time += delta;
 
-    gl::readFrame(time, OPCClient::Header::view(buffer).data());
+    uint8_t* data_out = OPCClient::Header::view(buffer).data();
+    gl::readFrame(time, &read_buffer[0]);
+    for (unsigned int i = 0; i < gl::width * gl::height; i++) {
+      for (int j = 0; j < 3; j++) {
+        data_out[i * 3 + j] = read_buffer[i * 4 + j];
+      }
+    }
+
     opc.write(buffer);
 
     // Low-pass filter for timeDelta, to estimate our frame rate
