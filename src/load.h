@@ -52,6 +52,7 @@ vector<double>* layout(const char* filename) {
   rapidjson::Document layout;
 
   FILE *f = fopen(filename, "r");
+
   if (!f) {
       return NULL;
   }
@@ -73,6 +74,25 @@ vector<double>* layout(const char* filename) {
   }
 
   return &pixel_locations;
+}
+
+rapidjson::Document* get_config() {
+  FILE *f = fopen("config.json", "r");
+  if (!f) {
+    printf("Error opening configuration json\n");
+    return NULL;
+  }
+
+  rapidjson::FileStream istr(f);
+  config.ParseStream<0>(istr);
+  fclose(f);
+
+  if (config.HasParseError()) {
+    printf("Error parsing configuration json\n");
+    return NULL;
+  }
+
+  return &config;
 }
 
 }

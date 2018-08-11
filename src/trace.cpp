@@ -6,18 +6,21 @@
 #include "fadecandy/opc_client.h"
 #include "gl.h"
 #include "load.h"
+#include "config.h"
 
 void sigint_handler(int sig_num) {
   exit(gl::exit());
 }
 
-int main(int argv, char** argc){
+int main(int argv, char** argc) {
 
   signal(SIGINT, sigint_handler);
 
   const unsigned int headerSize = sizeof(OPCClient::Header);
 
   printf("running trace\n");
+  printf("loading configuration\n");
+  config::init();
 
   // Create buffer to hold entire front buffer pixels
   // We multiply width and height by 3 to because we use RGB!
@@ -26,7 +29,8 @@ int main(int argv, char** argc){
 
   OPCClient opc;
   OPCClient::Header::view(buffer).init(0, opc.SET_PIXEL_COLORS, gl::width * gl::height * 3);
-  opc.resolve("192.168.1.12");
+  printf("connecting to address: %s\n", config::get_address());
+  opc.resolve(config::get_address());
   opc.tryConnect();
 
   gl::init();
