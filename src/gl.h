@@ -6,7 +6,7 @@
 #include <GLES2/gl2.h>
 
 #include "constants.h"
-#include "fadecandy/effect_runner.h"
+#include "load.h"
 
 namespace {
   static const EGLint configAttribs[] = {
@@ -83,7 +83,6 @@ namespace {
   int desiredWidth, desiredHeight;
   GLuint program, vert, frag, vbo, pointPositionTexture;
   GLint posLoc, colorLoc, timeLoc, pointPosLoc;
-  EffectRunner runner;
 
   void dumpErrors() {
     GLenum err;
@@ -192,25 +191,14 @@ namespace gl {
 
     // load layout
     printf("loading layout\n");
-    runner.setLayout("layout.json");
-    const Effect::PixelInfoVec& pixelInfo = runner.getPixelInfo();
-
-    GLubyte pixelLocation[byteCount];
-    for (Effect::PixelInfoIter i = pixelInfo.begin(), e = pixelInfo.end(); i != e; ++i) {
-
-      const Effect::PixelInfo &p = *i;
-      for (unsigned int j = 0; j < 4; j++) {
-        pixelLocation[p.index * 4 + j] = value_to_byte(p.point[j]);
-      }
+    std::vector<double>* pixel_locations_f = load::layout("layout.json");
+    std::vector<GLubyte> pixel_locations;
+    pixel_locations.resize(pixel_locations_f->size());
+    for (unsigned int i = 0; i < pixel_locations.size(); i++) {
+      pixel_locations[i] = value_to_byte(pixel_locations_f->at(i));
     }
 
-    printf("\n");
-
     printf("creating texture\n");
-
-    // set pack and upack settings
-    //glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // create texture
     glGenTextures(1, &pointPositionTexture);
@@ -229,7 +217,7 @@ namespace gl {
       0, /* border must be 0 */
       GL_RGBA, /* format must match internalFormat */
       GL_UNSIGNED_BYTE, /* type */
-      &pixelLocation[0] /* data */
+      &pixel_locations[0] /* data */
     );
 
     dumpErrors();
