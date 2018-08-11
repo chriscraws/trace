@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Generate GLSL
+echo "Generating shaders"
+(
+cd src/glsl
+for filename in *.frag; do 
+  echo "Building $filename"
+  cat "$filename" | glslify -t glslify-import > ../../shaders/"$filename";
+done
+)
+
 # Validate GLSL
 for filename in ./shaders/*.frag; do
   glslangValidator "$filename" || exit;

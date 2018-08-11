@@ -14,20 +14,15 @@ namespace {
   rapidjson::Document config;
   vector<double> pixel_locations;
 
-  double get_double(const rapidjson::Value* a, int i) {
-    if (a->IsArray()) {
-        const rapidjson::Value& b = &((*a)["point"])[i];
-        if (b.IsNumber()) {
-            return b.GetDouble();
-        }
-    }
-    return 0.0;
+  double get_double(const rapidjson::Value& a, int i) {
+    return a[i].GetDouble();
   }
 
-  void push_pixel(rapidjson::Value *attribute) {
-    pixel_locations.push_back(get_double(attribute, 0));
-    pixel_locations.push_back(get_double(attribute, 1));
-    pixel_locations.push_back(get_double(attribute, 2));
+  void push_pixel(rapidjson::Value& attribute) {
+    const rapidjson::Value& a = attribute["point"];
+    pixel_locations.push_back(get_double(a, 0));
+    pixel_locations.push_back(get_double(a, 1));
+    pixel_locations.push_back(get_double(a, 2));
   }
 }
 
@@ -48,13 +43,13 @@ const char* file(const char* name) {
   return "";
 }
 
-vector<double>* layout(const char* filename) {
+const vector<double>& layout(const char* filename) {
   rapidjson::Document layout;
 
   FILE *f = fopen(filename, "r");
 
   if (!f) {
-      return NULL;
+    printf("Layout file not found: %s\n", filename);
   }
 
   rapidjson::FileStream istr(f);
@@ -62,18 +57,18 @@ vector<double>* layout(const char* filename) {
   fclose(f);
 
   if (layout.HasParseError()) {
-      return NULL;
+    printf("Parsing error in layout.\n");
   }
   if (!layout.IsArray()) {
-      return NULL;
+    printf("Layout is not a list of points.\n");
   }
 
   pixel_locations.clear();
-  for (unsigned int i = 0; i < layout.Size(); i++) {
-    push_pixel(&layout[i]);
+  for (rapidjson::SizeType i = 0; i < layout.Size(); i++) {
+    push_pixel(layout[i]);
   }
 
-  return &pixel_locations;
+  return pixel_locations;
 }
 
 rapidjson::Document* get_config() {

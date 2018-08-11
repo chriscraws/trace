@@ -3,3 +3,4 @@ trace
 **.dSYM
 layout.json
 fadecandy-config.json
+shaders/*

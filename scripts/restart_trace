@@ -9,5 +9,5 @@ fi
 
 # Launch trace
 while true; do
-  echo shaders/* | entr -c -d -r ./scripts/run;
+  find . -path './src/glsl/*.frag' -or -name '*.json' | entr -c -d -r ./scripts/run;
 done

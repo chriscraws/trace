@@ -82,7 +82,7 @@ namespace {
   int major, minor;
   int desiredWidth, desiredHeight;
   GLuint vert, vbo, pointPositionTexture;
-  GLint posLoc, colorLoc, timeLoc, pointPosLoc;
+  GLint posLoc, timeLoc, pointPosLoc;
 
   void dumpErrors() {
     GLenum err;
@@ -123,7 +123,7 @@ namespace {
 namespace gl {
   static const EGLint width = pbufwidth;
   static const EGLint height = pbufheight;
-  static const EGLint byteCount = pbufsize * 4;
+  static const EGLint byteCount = pbufsize * 3;
 
   struct Program {
     std::string name;
@@ -198,14 +198,17 @@ namespace gl {
 
     // load layout
     printf("loading layout\n");
-    std::vector<double>* pixel_locations_f = load::layout(config::get_layout_filename());
+    const std::vector<double>& pixel_locations_f = load::layout(config::get_layout_filename());
     std::vector<GLubyte> pixel_locations;
-    pixel_locations.resize(pixel_locations_f->size());
+    pixel_locations.resize(pixel_locations_f.size());
     for (unsigned int i = 0; i < pixel_locations.size(); i++) {
-      pixel_locations[i] = value_to_byte(pixel_locations_f->at(i));
+      pixel_locations[i] = value_to_byte(pixel_locations_f.at(i));
     }
 
     printf("creating texture\n");
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
     // create texture
     glGenTextures(1, &pointPositionTexture);
@@ -218,11 +221,11 @@ namespace gl {
     glTexImage2D(
       GL_TEXTURE_2D, /* target */
       0, /* level of detail (mipmap) */
-      GL_RGBA, /* internalFormat */
+      GL_RGB, /* internalFormat */
       (GLsizei) pbufwidth, /* width */
       (GLsizei) pbufheight, /* height */
       0, /* border must be 0 */
-      GL_RGBA, /* format must match internalFormat */
+      GL_RGB, /* format must match internalFormat */
       GL_UNSIGNED_BYTE, /* type */
       &pixel_locations[0] /* data */
     );
@@ -267,16 +270,11 @@ namespace gl {
     glUseProgram(prog.glname);
     // Get vertex attribute and uniform locations
     posLoc = glGetAttribLocation(prog.glname, "aPos");
-    colorLoc = glGetUniformLocation(prog.glname, "color");
     timeLoc = glGetUniformLocation(prog.glname, "time");
     pointPosLoc = glGetUniformLocation(prog.glname, "spos");
 
     // set up the texture
     glUniform1i(pointPosLoc, 0);
-
-    // Set the desired color of the triangle to pink
-    // 100% red, 0% green, 50% blue, 100% alpha
-    glUniform4f(colorLoc, 1.0, 1.0f, 1.0, 1.0);
 
     // Set our vertex data
     glEnableVertexAttribArray(posLoc);
@@ -287,7 +285,7 @@ namespace gl {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUniform1f(timeLoc, time);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    glReadPixels(0, 0, desiredWidth, desiredHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    glReadPixels(0, 0, desiredWidth, desiredHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer);
   }
 
 
