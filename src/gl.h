@@ -7,6 +7,7 @@
 
 #include "constants.h"
 #include "load.h"
+#include "config.h"
 
 namespace {
   static const EGLint configAttribs[] = {
@@ -45,7 +46,6 @@ namespace {
     -1.0f,  1.0f, 0.0f,
   };
 
-  // The following are GLSL shaders for rendering a triangle on the screen
 #define STRINGIFY(x) #x
   static const char* vertexShaderCode = STRINGIFY(
       attribute vec3 aPos;
@@ -81,7 +81,7 @@ namespace {
   EGLContext context;
   int major, minor;
   int desiredWidth, desiredHeight;
-  GLuint program, vert, frag, vbo, pointPositionTexture;
+  GLuint vert, vbo, pointPositionTexture;
   GLint posLoc, colorLoc, timeLoc, pointPosLoc;
 
   void dumpErrors() {
@@ -124,6 +124,13 @@ namespace gl {
   static const EGLint width = pbufwidth;
   static const EGLint height = pbufheight;
   static const EGLint byteCount = pbufsize * 4;
+
+  struct Program {
+    std::string name;
+    GLuint glname;
+    GLuint frag;
+    GLuint vert;
+  };
 
   int init() {
     if((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY){
@@ -191,7 +198,7 @@ namespace gl {
 
     // load layout
     printf("loading layout\n");
-    std::vector<double>* pixel_locations_f = load::layout("layout.json");
+    std::vector<double>* pixel_locations_f = load::layout(config::get_layout_filename());
     std::vector<GLubyte> pixel_locations;
     pixel_locations.resize(pixel_locations_f->size());
     for (unsigned int i = 0; i < pixel_locations.size(); i++) {
@@ -219,33 +226,6 @@ namespace gl {
       GL_UNSIGNED_BYTE, /* type */
       &pixel_locations[0] /* data */
     );
-
-    dumpErrors();
-
-    return EXIT_SUCCESS;
-  }
-
-  int createProgram(const char* fragSource) {
-    program = glCreateProgram();
-    glUseProgram(program);
-    vert = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vert, 1, &vertexShaderCode, NULL);
-    glCompileShader(vert);
-    frag = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frag, 1, &fragSource, NULL);
-    glCompileShader(frag);
-    glAttachShader(program, frag);
-    glAttachShader(program, vert);
-    glLinkProgram(program);
-    glUseProgram(program);
-
-    glValidateProgram(program);
-    GLint pstatus;
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &pstatus);
-    if (pstatus == GL_FALSE) {
-      printf("Invalid program state\n");
-      return EXIT_FAILURE;
-    }
       
     // Create Vertex Buffer Object
     // Again, NO ERRRO CHECKING IS DONE! (for the purpose of this example)
@@ -253,11 +233,43 @@ namespace gl {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), vertices, GL_STATIC_DRAW);
 
+    vert = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vert, 1, &vertexShaderCode, NULL);
+    glCompileShader(vert);
+
+    dumpErrors();
+
+    return EXIT_SUCCESS;
+  }
+
+  int create_program(const char* fragSource, struct Program& program) {
+    program.glname = glCreateProgram();
+    program.frag = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(program.frag, 1, &fragSource, NULL);
+    glCompileShader(program.frag);
+    glAttachShader(program.glname, program.frag);
+    glAttachShader(program.glname, vert);
+    glLinkProgram(program.glname);
+
+    glValidateProgram(program.glname);
+    GLint pstatus;
+    glGetProgramiv(program.glname, GL_VALIDATE_STATUS, &pstatus);
+
+    if (pstatus == GL_FALSE) {
+      printf("Invalid program state for shader: %s\n", program.name);
+      return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+  }
+  
+  void read_frame(float time, struct Program& prog, uint8_t* buffer) {
+    glUseProgram(prog.glname);
     // Get vertex attribute and uniform locations
-    posLoc = glGetAttribLocation(program, "aPos");
-    colorLoc = glGetUniformLocation(program, "color");
-    timeLoc = glGetUniformLocation(program, "time");
-    pointPosLoc = glGetUniformLocation(program, "spos");
+    posLoc = glGetAttribLocation(prog.glname, "aPos");
+    colorLoc = glGetUniformLocation(prog.glname, "color");
+    timeLoc = glGetUniformLocation(prog.glname, "time");
+    pointPosLoc = glGetUniformLocation(prog.glname, "spos");
 
     // set up the texture
     glUniform1i(pointPosLoc, 0);
@@ -270,11 +282,6 @@ namespace gl {
     glEnableVertexAttribArray(posLoc);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    return EXIT_SUCCESS;
-  }
-  
-  void readFrame(float time, uint8_t* buffer) {
     // Clear whole screen (front buffer)
     glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

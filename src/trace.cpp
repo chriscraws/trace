@@ -36,8 +36,9 @@ int main(int argv, char** argc) {
   gl::init();
 
   printf("loading shaders\n");
-  const char* fragSource = load::file("shaders/test.frag");
-  gl::createProgram(fragSource);
+  const char* fragSource = load::file(config::get_override());
+  struct gl::Program p;
+  gl::create_program(fragSource, p);
 
   float time = 0.0, delta = 0.0;
   struct timeval now;
@@ -53,7 +54,7 @@ int main(int argv, char** argc) {
   while (true) {
     // send frame
     uint8_t* data_out = OPCClient::Header::view(buffer).data();
-    gl::readFrame(time, &read_buffer[0]);
+    gl::read_frame(time, p, &read_buffer[0]);
     for (unsigned int i = 0; i < gl::width * gl::height; i++) {
       for (int j = 0; j < 3; j++) {
         data_out[i * 3 + j] = read_buffer[i * 4 + j];
