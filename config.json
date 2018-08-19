@@ -1,0 +1,28 @@
+{
+  "address": {"ip": "127.0.0.1", "port": 7890},
+  "secondary_address": {"ip": "10.0.0.3", "port": 7890},
+  "layout": "layout.json",
+  "scene_time": 120,
+  "transition_time": 5,
+  "scenes": [
+    {
+      "filename": "shaders/sunset.frag",
+      "type": "natural"
+    },
+    {
+      "filename": "shaders/rainbow2.frag",
+      "type": "abstract"
+    },
+    {
+      "filename": "shaders/fire.frag",
+      "type": "natrual"
+    },
+    {
+      "filename": "shaders/rainbow1.frag",
+      "type": "abstract"
+    }
+  ],
+  "transitions": [
+    { "filename": "shaders/fade.frag"}
+  ]
+}

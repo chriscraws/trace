@@ -1,0 +1,5 @@
+#!/bin/sh
+(
+cd src/glsl
+cat header.glsl | glslify -t glslify-import > header
+)

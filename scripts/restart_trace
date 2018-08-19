@@ -1,5 +1,13 @@
 #!/bin/bash
-rm ./trace
-rm -rf **.dSYM
-make trace
-./trace -layout layout.json -server localhost:8000
+
+# Recompile if -r flag is passed
+if [ "$1" == "-r" ]; then
+  rm ./trace
+  rm -rf **.dSYM
+  make trace && clear || exit
+fi
+
+# Launch trace
+while true; do
+  find . -path './src/glsl/*.frag' -or -name '*.json' | entr -c -d -r ./scripts/run;
+done

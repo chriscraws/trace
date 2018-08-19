@@ -3,7 +3,7 @@ CXXFLAGS = -O3 -ffast-math -fno-rtti
 
 # Standard libraries
 #LDFLAGS = -lm -lstdc++ -lpthread
-LDFLAGS = -lm -lpthread
+LDFLAGS = -lm -lpthread -lEGL -lGLESv2
 
 # Debugging
 CXXFLAGS += -g -Wall
@@ -32,8 +32,13 @@ fadecandy/bin/server:
 	make -C fadecandy/server submodules
 	make -C fadecandy/server
 
-trace:
-	$(CXX) $(CXXFLAGS) src/trace.cpp -o trace $(LDFLAGS)
+objects := $(patsubst src/%.cpp,obj/%.o,$(wildcard src/*.cpp))
+
+obj/%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -I/opt/vc/include -L/opt/vc/lib
+
+trace: $(objects)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -I/opt/vc/include -L/opt/vc/lib
 
 layout.json:
 	./scripts/generate-layout.py > layout.json
@@ -41,4 +46,4 @@ layout.json:
 .PHONY: clean all
 
 clean:
-	rm -rf trace layout.json **.dSYM
+	rm -rf trace trace.o layout.json **.dSYM obj/*

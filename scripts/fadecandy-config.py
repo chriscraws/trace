@@ -28,6 +28,13 @@ FADECANDY_SERIAL_NUMBERS = [
   "JVQHWMWSTTDACSNR"
 ]
 
+GROUND_FC_SN = [
+  "YMBILLJDJZVUKMDD",
+  "WWNEPZZJVBNEYUFV",
+  "GMHETPJPJXDOWGBZ",
+  "AGPMFFVTLRFYWWJH"
+]
+
 import json
 import math
 
@@ -82,6 +89,20 @@ for i in range(len(FADECANDY_SERIAL_NUMBERS)):
         get_map(i, 5),
         get_map(i, 6),
         get_map(i, 7),
+    ]
+  }
+  config["devices"].append(device)
+
+for i in range(len(GROUND_FC_SN)):
+  opc_channel = 0
+  opc_start_index = 36 * 67 + i * 44
+  device = {
+    "type": "fadecandy",
+    "serial": GROUND_FC_SN[i],
+    "led": False,
+    "map": [
+      [opc_channel, opc_start_index, 0, 22],
+      [opc_channel, opc_start_index + 22, 64, 22]
     ]
   }
   config["devices"].append(device)

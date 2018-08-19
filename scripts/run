@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Generate GLSL
+(
+cd src/glsl
+# cat header.glsl | glslify -t glslify-import > header
+for filename in *.frag; do 
+  cat header > ../../shaders/"$filename"
+  cat "$filename" >> ../../shaders/"$filename"
+done
+)
+
+# Validate GLSL
+for filename in ./shaders/*.frag; do
+  glslangValidator "$filename" || exit;
+done
+
+# Run
+./trace
