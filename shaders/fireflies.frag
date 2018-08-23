@@ -1369,34 +1369,32 @@ vec3 getChandelier() {
   vec3 p = getLocation() - getOffset();
   bool bottom = false;
 
-  float freq = random(p.xz);
+  float freq = random(p.xz) / 80.0;
 
   float y = p.y + 1.0;
   y /= 2.0;
 
   bottom = y < 0.001;
 
-  y += (1.0 + 0.5 * random(p.xz + 100.0)) * time * 0.6;
+  y -= 100.0 * random(p.xz + 400.0) + (1.0 + 5.0 * random(p.xz + 500.0)) * time * 0.05;
 
-  float b = fract(y / (0.35 + freq * 0.8));
+  float b = fract(y / (1.0 + 0.8 * freq));
 
   float i = step(0.5, b);
-  float newb = pow(pdf((b - 0.5) * 50.0), 1.0);
+  b = pdf((b - 0.5) * 60.0);
+  
+  b *= pdf((p.y - snoise_1(vec3(p.xz, time / 50.0))) * 5.0);
 
-  if (bottom) {
-    b = mix(newb, (1.0 - b) * 2.0, i);
-  } else {
-    b = newb;
-  }
-
-  float t = time / 800.0;
-  b += smoothstep(-1.0 + t, -1.1 + t, p.y);
-  return vec3(b);
+  return hsv2rgb(vec3(
+    1.0 / 6.0,
+    0.9,
+    b  
+  ));
 }
 
 vec3 getGroundTube() {
   vec3 color = vec3(0.5 + 0.5 * cnoise_0(vec3(getLocation().xz / 1.2, time / 5.0)));
-  color.rg *= 0.7;
+  color.rg *= 0.2;
   return color;
 }
 

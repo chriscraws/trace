@@ -2,9 +2,9 @@
   "address": {"ip": "127.0.0.1", "port": 7890},
   "secondary_address": {"ip": "192.168.1.5", "port": 7890},
   "layout": "layout.json",
-  "scene_time": 500,
-  "transition_time": 1,
-  "override": 6,
+  "scene_time": 60,
+  "transition_time": 5,
+  "override": -1,
   "scenes": [
     {
       "filename": "shaders/sunset.frag",
@@ -32,6 +32,14 @@
     },
     {
       "filename": "shaders/liquid.frag",
+      "type": "natural"
+    },
+    {
+      "filename": "shaders/lines.frag",
+      "type": "abstract"
+    },
+    {
+      "filename": "shaders/rain.frag",
       "type": "natural"
     }
   ],

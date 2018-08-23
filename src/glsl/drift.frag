@@ -28,6 +28,7 @@ vec3 getChandelier() {
   vec3 color = hsv2rgb(vec3(0.12 * sin(time / 2.0) + 0.85 - 1.2 * length(d), 1.0, b));
   return color;
 }
+
 void main() {
   vec3 p = getLocation();
   vec3 off = getOffset();
