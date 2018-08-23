@@ -35,10 +35,10 @@ fadecandy/bin/server:
 objects := $(patsubst src/%.cpp,obj/%.o,$(wildcard src/*.cpp))
 
 obj/%.o: src/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -I/opt/vc/include -L/opt/vc/lib
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -I/opt/vc/include
 
 trace: $(objects)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -I/opt/vc/include -L/opt/vc/lib
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -L/opt/vc/lib
 
 layout.json:
 	./scripts/generate-layout.py > layout.json

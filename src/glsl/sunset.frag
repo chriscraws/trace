@@ -3,7 +3,7 @@ void main() {
   float pi = getIndex();
   vec3 p = getLocation() - getOffset();
 
-  float t = time / 70.0;
+  float t = 1.5 * time / 70.0;
 
 
   vec3 sunp = p;
@@ -34,7 +34,7 @@ void main() {
   float r = random(vec2(random(p.xy), p.z));
   float prob = mix(0.93, 0.6, step(0.1, length(getOffset())));
   if (r > prob) {
-    starcolor = vec3(r * (.85 * sin(t * (r * 70.0) + 720.0 * r) + 0.75));
+    starcolor = vec3(r * (.85 * sin(t * (r * 20.0) + 720.0 * r) + 0.75));
   }
   starcolor *= 1.0 - pow(sin(2.0 * PI * (t / 3.8 + 0.125)) + 0.1, 3.0) / pow(1.1, 3.0);
 

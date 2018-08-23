@@ -124,3 +124,10 @@ int Config::get_primary_port() {
 int Config::get_secondary_port() {
   return config_document["secondary_address"]["port"].GetInt();
 }
+
+int Config::get_override_index() {
+  if (!config_document.HasMember("override")) {
+    return -1;
+  }
+  return config_document["override"].GetInt();
+}

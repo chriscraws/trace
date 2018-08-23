@@ -20,6 +20,7 @@ class Sequencer {
 
   int scene_index = 0;
   int transition_index = 0;
+  int override_index;
 
 public:
   Sequencer(
@@ -28,7 +29,8 @@ public:
     std::vector<Scene>& scenes,
     std::vector<Transition>& transitions,
     Opc* opc,
-    Gpu* gpu
+    Gpu* gpu,
+    int override_index = -1
   );
 
   void run();

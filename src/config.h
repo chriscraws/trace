@@ -29,6 +29,7 @@ public:
   int get_secondary_port();
   float get_scene_time();
   float get_transition_time();
+  int get_override_index();
 
   vector<SceneInfo>& get_scene_info();
   vector<SceneInfo>& get_transition_info();

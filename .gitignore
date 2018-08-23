@@ -3,3 +3,7 @@ trace
 **.dSYM
 layout.json
 fadecandy-config.json
+trace.log
+gl.log
+fc.log
+fclog

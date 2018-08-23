@@ -5,10 +5,10 @@ float fbm(vec3 p) {
     0.0, 1.0, 0.0,
    -1.2, 0.0, 1.6
   );
-  f  = 0.5 * cnoise_1(p); p = m*p;
-  f += 0.25 * cnoise_1(p); p = m*p;
-  f += 0.125 * cnoise_1(p); p = m*p;
-  f += 0.0625 * cnoise_1(p); p = m*p;
+  f  = 0.5 * cnoise_0(p); p = m*p;
+  f += 0.25 * cnoise_0(p); p = m*p;
+  f += 0.125 * cnoise_0(p); p = m*p;
+  f += 0.0625 * cnoise_0(p); p = m*p;
   f = 0.5 + 0.5 * f;
   return f;
 }

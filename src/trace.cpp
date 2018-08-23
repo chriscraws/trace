@@ -63,14 +63,14 @@ int main()
     pixel_count * 3
   );
 
-  // todo check for connection
   Sequencer sequencer(
     config.get_scene_time(), 
     config.get_transition_time(),
     scenes,
     transitions,
     &opc,
-    &gpu
+    &gpu,
+    config.get_override_index()
   );
 
   cout << "Running\n";

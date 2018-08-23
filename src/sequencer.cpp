@@ -11,14 +11,21 @@ Sequencer::Sequencer(
     std::vector<Scene>& scenes,
     std::vector<Transition>& transitions,
     Opc* opc,
-    Gpu* gpu
+    Gpu* gpu,
+    int override_index
     ) :
   gpu(gpu),
   opc(opc),
   scenes(scenes),
   transitions(transitions),
   scene_time(scene_time),
-  transition_time(transition_time) {}
+  transition_time(transition_time),
+  override_index(override_index) {
+ 
+    if (override_index >= 0) {
+      scene_index = override_index;
+    } 
+  }
 
 void Sequencer::step(float time) {
 
@@ -28,6 +35,9 @@ void Sequencer::step(float time) {
       time_mark = time;
       transitioning = false;
       scene_index = (scene_index + 1) % scenes.size();
+      if (override_index >= 0) {
+	scene_index = override_index;
+      }
       transition_index = (transition_index + 1) % transitions.size();
     }
   } else {
@@ -43,7 +53,10 @@ void Sequencer::step(float time) {
     float mix = (time - time_mark) / transition_time;
 
     scenes[scene_index].draw(time - scene_start, 1);
-    scenes[(scene_index + 1) % scenes.size()].draw(time - time_mark, 2);
+    int next_index = override_index >= 0 ?
+      override_index :
+      (scene_index + 1) % scenes.size();
+    scenes[next_index].draw(time - time_mark, 2);
     transitions[transition_index].draw(time - time_mark, mix);
   }
 
