@@ -1377,6 +1377,8 @@ vec3 line(
     p *= rotation3dZ(time / 15.0);
     p *= rotation3dX(time / 30.0);
 
+    p.y += 0.3 * sin(time / 5.0);
+
     vec3 start = vec3(
         0.7 * (2.0 * random(vec2(0.0, r)) - 1.0),
         -1.2 * (2.0 * random(vec2(1.0, r)) - 1.0),
@@ -1411,8 +1413,8 @@ vec3 line(
     float b = smoothstep(0.2, 0.05, d);
 
     vec3 color = hsv2rgb(vec3(
-        random(vec2(3.0, r)),
-        0.8 + 0.2 * pow(random(vec2(4.0, r)), 3.0),
+        fract(r / 15.0),
+        1.0,
         (0.5 + 0.5 * random(vec2(5.0, r))) * b
     ));
 
@@ -1420,10 +1422,10 @@ vec3 line(
 }
 
 vec3 chandelier() {
-    float t = time / 70.0;
+    float t = time / 40.0;
     vec3 color = vec3(0.0);
 
-    const float c = 4.0;
+    const float c = 5.0;
     float n = 1.0 / c;
 
     for (float i = 0.0; i < c; i++) {
@@ -1442,20 +1444,22 @@ vec3 chandelier() {
 }
 
 vec3 ground() {
-    float t = time / 70.0 * 4.0;
+    float t = time / 40.0 * 5.0;
 
-    float h = random(vec2(10.0, floor(t)));
-    float h2 = random(vec2(10.0, floor(t) + 1.0));
+    float h = snoise_0(vec2(10.0, floor(t)));
+    float h2 = snoise_0(vec2(10.0, floor(t) + 1.0));
 
+    vec2 p = getLocation().xz;
+    float t2 = time / 5.0;
     vec3 c = hsv2rgb(vec3(
-        h,
+        h + 0.05 * snoise_1(vec3(p, t2)),
         1.0,
-        0.8
+        (0.7 + 0.2 * snoise_1(vec3(p, t2)))
     ));
     vec3 c2 = hsv2rgb(vec3(
-        h2,
+        h2 + 0.05 * snoise_1(vec3(p, t2)),
         1.0,
-        0.8
+        (0.7 + 0.2 * snoise_1(vec3(p, t2)))
     ));
 
     return mix(c, c2, pow(fract(t), 20.0));
