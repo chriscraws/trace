@@ -3,7 +3,7 @@ void main() {
   float pi = getIndex();
   vec3 p = getLocation() - getOffset();
 
-  float t = 1.5 * time / 70.0;
+  float t = 2.8 * time / 70.0;
 
 
   vec3 sunp = p;
